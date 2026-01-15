@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gender-Coded Word Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            padding: 60px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            font-size: 2.5em;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+        }
+
+        .subtitle {
+            color: #86868b;
+            margin-bottom: 48px;
+            font-size: 1.05em;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1.5px solid rgba(0, 0, 0, 0.06);
+            border-radius: 18px;
+            padding: 60px;
+            text-align: center;
+            margin-bottom: 32px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-section:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-section:active {
+            transform: translateY(0);
+        }
+
+        .upload-section label {
+            color: #1d1d1f;
+            font-size: 1.05em;
+            cursor: pointer;
+            display: block;
+            font-weight: 400;
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        #output {
+            display: none;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #86868b;
+            margin-bottom: 6px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .info-value {
+            color: #1d1d1f;
+            font-size: 1.05em;
+            font-weight: 400;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 32px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 32px 28px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .masculine-card {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%);
+        }
+
+        .feminine-card {
+            background: linear-gradient(135deg, rgba(255, 45, 85, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%);
+        }
+
+        .count {
+            font-size: 3.5em;
+            font-weight: 600;
+            margin: 16px 0;
+            color: #1d1d1f;
+            letter-spacing: -0.02em;
+        }
+
+        .result-title {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+
+        .words-list {
+            background: rgba(242, 242, 247, 0.6);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 20px;
+            max-height: 160px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .words-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .words-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .words-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .word-tag {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.06);
+            color: #1d1d1f;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin: 4px;
+            font-size: 0.85em;
+            font-weight: 400;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 40px 20px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .upload-section {
+                padding: 40px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gender-Coded Resume Analyzer</h1>
+        <p class="subtitle">Analyze your resume as a text file for gender-coded language patterns that may affect your chances</p>
+        
+        <div class="upload-section">
+            <label for="fileInput">
+                Click to upload a text file
+                <input type="file" id="fileInput" accept=".txt" />
+            </label>
+        </div>
+
+        <div id="output">
+            <div class="info-card">
+                <div class="info-label">File Name</div>
+                <div class="info-value" id="fileName"></div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label">File Size</div>
+                <div class="info-value" id="fileSize"></div>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-card masculine-card">
+                    <div class="result-title">Masculine Words</div>
+                    <div class="count" id="masculineCount">0</div>
+                    <div class="words-list" id="masculineWords"></div>
+                </div>
+
+                <div class="result-card feminine-card">
+                    <div class="result-title">Feminine Words</div>
+                    <div class="count" id="feminineCount">0</div>
+                    <div class="words-list" id="feminineWords"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       const genderCodedWords = {
+    masculine: [
+        'strong',
+        'lead',
+        'analysis',
+        'individual',
+        'decisions',
+        'driven',
+        'competitive',
+        'expert',
+        'objectives',
+        'principles',
+        'aggressive',
+        'assertive',
+        'ninja',
+        'rockstar',
+        'independent',
+        'dominant',
+        'ambitious',
+        'decisive',
+        'courageous',
+        'performance'
+    ],
+    feminine: [
+        'support',
+        'share',
+        'responsible',
+        'understand',
+        'together',
+        'committed',
+        'interpersonal',
+        'feel',
+        'collaborate',
+        'connect',
+        'supportive',
+        'nurturing',
+        'loyal',
+        'understanding',
+        'empathetic',
+        'caring',
+        'help',
+        'inclusive',
+        'teamwork'
+    ]
+};
+
+
+        function countGenderedWords(text, genderCodedWords) {
+            const lowerText = text.toLowerCase();
+
+            const counts = {
+                masculine: 0,
+                feminine: 0,
+                masculineWords: [],
+                feminineWords: []
+            };
+
+            genderCodedWords.masculine.forEach(word => {
+                const regex = new RegExp('\\b' + word + '\\w*\\b', 'gi');
+                const matches = lowerText.match(regex);
+                if(matches) {
+                    counts.masculine += matches.length;
+                    counts.masculineWords.push(...matches);
+                }
+            });
+
+            genderCodedWords.feminine.forEach(word => {
+                const regex = new RegExp('\\b' + word + '\\w*\\b', 'gi');
+                const matches = lowerText.match(regex);
+                if(matches) {
+                    counts.feminine += matches.length;
+                    counts.feminineWords.push(...matches);
+                }
+            });
+            return counts;
+        }
+
+        const fileInput = document.getElementById("fileInput");
+        fileInput.addEventListener("change", async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById("fileName").textContent = file.name;
+            document.getElementById("fileSize").textContent = (file.size / 1024).toFixed(2) + " KB";
+
+            const text = await file.text();
+            const results = countGenderedWords(text, genderCodedWords);
+
+            document.getElementById("masculineCount").textContent = results.masculine;
+            document.getElementById("feminineCount").textContent = results.feminine;
+
+            const masculineWordsDiv = document.getElementById("masculineWords");
+            masculineWordsDiv.innerHTML = results.masculineWords.length > 0 
+                ? results.masculineWords.map(word => `<span class="word-tag">${word}</span>`).join('')
+                : '<span class="word-tag">None found</span>';
+
+            const feminineWordsDiv = document.getElementById("feminineWords");
+            feminineWordsDiv.innerHTML = results.feminineWords.length > 0 
+                ? results.feminineWords.map(word => `<span class="word-tag">${word}</span>`).join('')
+                : '<span class="word-tag">None found</span>';
+
+            document.getElementById("output").style.display = "block";
+        });
+    </script>
+</body>
+</html>
