@@ -1,2 +1,2 @@
-# resume-bias-ai
-Gender Based Descrimination in Resume Model
+# resume-bias-detector
+Gender Based Descrimination in Resume Detector
